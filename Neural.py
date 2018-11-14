@@ -16,6 +16,19 @@ class Network(object):
             a = sigmoid(np.dot(w, a)+b)
         return a
 
+    def generate_child(self):
+        #Genera una xarxa fill de la xarxa pare.
+        child = Network(self.sizes)
+        # Recalcula els biaxos de la xarxa fill
+        for i, b in enumerate(self.biases):
+            child.biases[i] = b + child.biases[i] * 0.1
+
+        #Recalcula els pesos de la xarxa fill
+        for i, w in enumerate(self.weights):
+            child.weights[i] = w + child.weights[i] * 0.1
+
+        return child
+
 
 def sigmoid(z):
     return 1.0/(1.0+np.exp(-z))

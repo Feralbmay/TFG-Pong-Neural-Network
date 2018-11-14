@@ -65,6 +65,7 @@ def updateBall(paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, bal
             ballXPos <= PADDLE_BUFFER + PADDLE_WIDTH and ballYPos + BALL_HEIGHT >= paddleLYPos and ballYPos - BALL_HEIGHT <= paddleLYPos + PADDLE_HEIGHT):
         # Cambia de direccio
         ballXDirection = 1
+        score = 2
     # No colisiona
     elif (ballXPos <= 0):
         # Score negatiu
@@ -132,6 +133,7 @@ class PongGame:
         num = random.randint(0, 9)
         # Mantener el score
         self.tally = 0
+        self.hit = False
         # iniciam la pala
         # Si tenim mes de una paleta(es pasara a l'init)
         # self.number_paddle = np
@@ -169,6 +171,7 @@ class PongGame:
         pygame.event.pump()
         score = 0
         screen.fill(BLACK)
+        self.hit = False
         # Actualitzam la nostra pala
         self.paddleLYPos = updatePaddle_left(action, self.paddleLYPos)
         drawPaddle_left(self.paddleLYPos)
@@ -186,6 +189,9 @@ class PongGame:
         # Actualitzam la finestra
         pygame.display.flip()
         # Actualitzam la puntuacio total
+        if(score == 2):
+            score = 0
+            self.hit = True
         self.tally = self.tally + score
         print
         "Tally is " + str(self.tally)
@@ -201,5 +207,8 @@ class PongGame:
 
     def getPaddlePos(self):
         return [self.paddleLYPos, PADDLE_BUFFER]
+
+    def gethit(self):
+        return self.hit
 
 

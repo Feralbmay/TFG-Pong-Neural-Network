@@ -2,11 +2,14 @@ import Pong  # our class
 import numpy as np  # math
 import Neural
 import random
+import time
+
 # hyper params
 ACTIONS = 3  # up,down, stay
 IMPUTS = 12 # Posicio de la pilota a les ultimes 5 iteracions i posicio actual de la paelata
 NUM_XARXES = 50 #Numero de xarxes
 HITS_GOAL = 20 #Nombre de cops objectiu
+
 
 #Actualitza els imputs de les pilotes, copiant les anteriors posicions de les pilotes i actualitzant l'actual.
 def UpdateImputs(x, y, x1, y1, x2, y2, x3, y3, Px, Py):
@@ -63,19 +66,23 @@ def main():
     #Cream els 2 arrays que emprarem per a les generacions
     nets = []
     n = 0
+
     while(n < NUM_XARXES):
         nets.append(Neural.Network(sizes))
         n = n+1
 
     hits = np.zeros(NUM_XARXES, dtype=np.int16)
-
-    
     while(max_hit < HITS_GOAL):
         x = 0
+        start = time.time()
         while(x < NUM_XARXES):
+            if (x != 0):
+                start = time.time()
             hits[x] = 0
-            score = 0
+            score = -2
             while(score != -1 and hits[x] < HITS_GOAL):
+                if ((score != -2 and x != 0) or score != -2):
+                    start = time.time()
                 # Copiam la posicio actual de la paleta de la qual decidim l'accio
                 px, py = game.getPaddlePos()
                 #Cream l'array(matriu (n,1)) de imputs de la xarxa
@@ -89,6 +96,8 @@ def main():
                 #Si la pala ha pegat a la pilota, aumentam els hits de la xarxa
                 if(game.gethit()):
                     hits[x] = hits[x] + 1
+                time.sleep(max(1. / game.getFPS() - (time.time() - start), 0))
+
             x = x + 1
         #Sort
         i = 0
@@ -107,7 +116,7 @@ def main():
         #Emmagatzemam la xarxa i el nombre de cops
         best_hits.append(hits[0])
         best_nets.append(nets[0])
-        print("/ Hits cumu", best_hits)
+        print("/Length",best_hits.__len__(),"/ Hits cumu", best_hits)
         max_hit = hits[0]
         #Si cap xarxa a copetjat, generam noves aleatoriament
         if(hits[0] == 0):
@@ -115,7 +124,7 @@ def main():
             while (n < NUM_XARXES):
                 nets[n] = Neural.Network(sizes)
                 n = n + 1
-        else:
+        elif(max_hit < HITS_GOAL):
             #Copiam les xarxes
             copy_nets = nets
             #Recorreguem les xarxes
@@ -129,7 +138,9 @@ def main():
                     aux = aux + 1
                 #Generam la nova xarxa filla de la xarxa de l'index    
                 nets[i] =  copy_nets[aux].generate_child()
+
         print("/ Hits", best_hits[-1])
+
 
 
 

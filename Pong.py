@@ -7,7 +7,7 @@ import random  # help us define which direction the ball will start moving in
 # Aquesta primera versio no inclou varies xarxes.
 
 # Frame rate
-FPS = 60
+FPS = 240
 
 # Tamany de la finestra
 WINDOW_WIDTH = 400
@@ -64,8 +64,9 @@ def updateBall(paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, bal
     if (
             ballXPos <= PADDLE_BUFFER + PADDLE_WIDTH and ballYPos + BALL_HEIGHT >= paddleLYPos and ballYPos - BALL_HEIGHT <= paddleLYPos + PADDLE_HEIGHT):
         # Cambia de direccio
-        ballXDirection = 1
-        score = 2
+        if(ballXDirection != 1):
+            ballXDirection = 1
+            score = 2
     # No colisiona
     elif (ballXPos <= 0):
         # Score negatiu
@@ -81,8 +82,9 @@ def updateBall(paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, bal
     # No Colisiona
     elif (ballXPos >= WINDOW_WIDTH - BALL_WIDTH):
         # Score positiu
-        ballXDirection = -1
-        score = 1
+        if(ballXDirection != -1):
+            ballXDirection = -1
+            score = 1
         return [score, paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, ballYDirection]
 
     # Colisiona amb la part superior
@@ -210,5 +212,8 @@ class PongGame:
 
     def gethit(self):
         return self.hit
+
+    def getFPS(self):
+        return FPS
 
 

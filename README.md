@@ -37,3 +37,5 @@ python main.py
 Modificacio de la versio anterior, per a poder extraeure dades de diferents configuracions alhora.
 La versio extreu dades de la convinacio del següents imputs(la posicio actual de la pilota i la paleta(4), la posicio actual de la pilota, les dues anteriors i la posicio actual de la paleta(8) i la posicio actual de la pilota, les cuatre anteriors i la posicio actual de la paleta(12). 
 En la versio penjada, les proves es repeteixen 20 cops per cada configuracio. Adicionalment, el limit de generacions es 3000( si es rebassa, pasa com a acceptada, pero a les dades es reflecteix com a -1.
+
+A mes, se ha inclos la proposta de generar un 20% de la nova generacio com a fills aleatoris de la anterior xarxa(tenguent totes les xarxes les mateixes posibilitats).

@@ -32,3 +32,7 @@ Instalació:
 ```
 python main.py
 ```
+
+# Segona Versio per extraccio de dades(Pong Simple generacions Probes)
+Modificacio de la versio anterior, per a poder extraeure dades de diferents configuracions alhora.
+La versio extreu dades de la convinacio del següents imputs(la posicio actual de la pilota i la paleta(4), la posicio actual de la pilota, les dues anteriors i la posicio actual de la paleta(8) i la posicio actual de la pilota, les cuatre anteriors i la posicio actual de la paleta(12)

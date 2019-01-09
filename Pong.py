@@ -7,7 +7,7 @@ import random  # help us define which direction the ball will start moving in
 # Aquesta primera versio no inclou varies xarxes.
 
 # Frame rate
-FPS = 240
+FPS = 60
 
 # Tamany de la finestra
 WINDOW_WIDTH = 400
@@ -58,6 +58,7 @@ def updateBall(paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, bal
     ballXPos = ballXPos + ballXDirection * BALL_X_SPEED
     ballYPos = ballYPos + ballYDirection * BALL_Y_SPEED
     score = 0
+    distancia = 0
 
     # Comproba les colisions de la xarxa.
     # Paralelizar en iteraciones posteriores
@@ -72,7 +73,11 @@ def updateBall(paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, bal
         # Score negatiu
         ballXDirection = 1
         score = -1
-        return [score, paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, ballYDirection]
+        if(ballYPos < paddleLYPos ):
+            distancia = paddleLYPos - ballYPos - BALL_HEIGHT
+        else:
+            distancia = ballYPos - paddleLYPos - PADDLE_HEIGHT
+        return [score, paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, ballYDirection, distancia]
 
     # Comproba les colisions de la IA
     if (
@@ -85,7 +90,7 @@ def updateBall(paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, bal
         if(ballXDirection != -1):
             ballXDirection = -1
             score = 1
-        return [score, paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, ballYDirection]
+        return [score, paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, ballYDirection, distancia]
 
     # Colisiona amb la part superior
     # Mou abaix
@@ -96,11 +101,12 @@ def updateBall(paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, bal
     elif (ballYPos >= WINDOW_HEIGHT - BALL_HEIGHT):
         ballYPos = WINDOW_HEIGHT - BALL_HEIGHT
         ballYDirection = -1
-    return [score, paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, ballYDirection]
+    return [score, paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, ballYDirection, distancia]
 
 def updatePaddle_left(action, paddleLYPos):
     #Paralelitzar
     # Adalt
+    Top = False
     if (action == 1):
         paddleLYPos = paddleLYPos - PADDLE_SPEED
     # Abaix
@@ -109,9 +115,11 @@ def updatePaddle_left(action, paddleLYPos):
 
     if (paddleLYPos < 0):
         paddleLYPos = 0
+        Top = True
     if (paddleLYPos > WINDOW_HEIGHT - PADDLE_HEIGHT):
         paddleLYPos = WINDOW_HEIGHT - PADDLE_HEIGHT
-    return paddleLYPos
+        Top = True
+    return [paddleLYPos, Top]
 
 
 def updatePaddle_right(paddleRYPos, ballYPos):
@@ -136,6 +144,10 @@ class PongGame:
         # Mantener el score
         self.tally = 0
         self.hit = False
+
+
+        self.distance = 0
+        self.Top = False
         # iniciam la pala
         # Si tenim mes de una paleta(es pasara a l'init)
         # self.number_paddle = np
@@ -175,15 +187,15 @@ class PongGame:
         screen.fill(BLACK)
         self.hit = False
         # Actualitzam la nostra pala
-        self.paddleLYPos = updatePaddle_left(action, self.paddleLYPos)
+        [self.paddleLYPos,  self.Top]= updatePaddle_left(action, self.paddleLYPos)
         drawPaddle_left(self.paddleLYPos)
         # Actualitzam la IA
         self.paddleRYPos = updatePaddle_right(self.paddleRYPos, self.ballYPos)
         drawPaddle_right(self.paddleRYPos)
         # Actualitzam la pilota
         [score, self.paddleLYPos, self.paddleRYPos, self.ballXPos, self.ballYPos, self.ballXDirection,
-        self.ballYDirection] = updateBall(self.paddleLYPos, self.paddleRYPos, self.ballXPos, self.ballYPos,
-                                       self.ballXDirection, self.ballYDirection)
+        self.ballYDirection, self.distance] = updateBall(self.paddleLYPos, self.paddleRYPos, self.ballXPos,
+                                                                   self.ballYPos,self.ballXDirection, self.ballYDirection)
         # Pintam la pilota
         drawBall(self.ballXPos, self.ballYPos)
         # Copiam la data de imatge
@@ -216,4 +228,24 @@ class PongGame:
     def getFPS(self):
         return FPS
 
+    def getDistancia(self):
+        return self.distance
 
+    def getTop(self):
+        return self.Top
+
+    def testTop(self):
+        self.ballYDirection = -1
+        self.ballXDirection = -1
+        self.ballXPos = 380
+        self.ballYPos = 253
+        self.paddleLYPos = 200
+        self.hit = False
+
+    def testBotton(self):
+        self.ballYDirection = 1
+        self.ballXDirection = -1
+        self.ballXPos = 380
+        self.ballYPos = 147
+        self.paddleLYPos = 200
+        self.hit = False

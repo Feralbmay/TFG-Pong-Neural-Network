@@ -1,5 +1,6 @@
 import pygame  # helps us make GUI games in python
 import random  # help us define which direction the ball will start moving in
+import math
 
 # Primera versio del projecte de xarxes neuronals aplicades al pong
 # Aquest arxiu conte la part del codi que regula el joc, la xarxa
@@ -62,6 +63,7 @@ def updateBall(paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, bal
     ballXPos = ballXPos + ballXDirection * BALL_X_SPEED
     ballYPos = ballYPos + ballYDirection * BALL_Y_SPEED
     score = 0
+    distancia = 0
 
     # Comproba les colisions de la xarxa.
     # Paralelizar en iteraciones posteriores
@@ -76,7 +78,11 @@ def updateBall(paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, bal
         # Score negatiu
         ballXDirection = 1
         score = -1
-        return [score, paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, ballYDirection]
+        if (ballYPos < paddleLYPos):
+            distancia = paddleLYPos - ballYPos - BALL_HEIGHT
+        else:
+            distancia = ballYPos - paddleLYPos - PADDLE_HEIGHT
+        return [score, paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, ballYDirection, distancia]
 
     # Comproba les colisions de la IA
     if (
@@ -89,7 +95,7 @@ def updateBall(paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, bal
         if(ballXDirection != -1):
             ballXDirection = -1
             score = 1
-        return [score, paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, ballYDirection]
+        return [score, paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, ballYDirection, distancia]
 
 
     # Colisiona amb la part superior
@@ -101,15 +107,15 @@ def updateBall(paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, bal
     elif (ballYPos >= WINDOW_HEIGHT - BALL_HEIGHT):
         ballYPos = WINDOW_HEIGHT - BALL_HEIGHT
         ballYDirection = -1
-    return [score, paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, ballYDirection]
+    return [score, paddleLYPos, paddleRYPos, ballXPos, ballYPos, ballXDirection, ballYDirection, distancia]
 
 # Actualitzam la posicio de la pilota amb les paletes
-def updateBall_Wall(paddleLYPos, ballXPos, ballYPos, ballXDirection, ballYDirection, BALL_X_SPEED, BALL_Y_SPEED):
+def updateBall_Wall(paddleLYPos, ballXPos, ballYPos, ballXDirection, speed, angle, mspeed, mangle, mangle_2, Ball_X_Speed, Ball_Y_Speed):
     # Actualitzam la posicio X e Y de la pilota
-    ballXPos = ballXPos + ballXDirection * BALL_X_SPEED
-    ballYPos = ballYPos + ballYDirection * BALL_Y_SPEED
+    ballXPos = ballXPos + ballXDirection * Ball_X_Speed
+    ballYPos = ballYPos + Ball_Y_Speed
     score = 0
-
+    distancia = 0
     # Comproba les colisions de la xarxa.
     # Paralelizar en iteraciones posteriores
     if (
@@ -123,16 +129,27 @@ def updateBall_Wall(paddleLYPos, ballXPos, ballYPos, ballXDirection, ballYDirect
         # Score negatiu
         ballXDirection = 1
         score = -1
-        return [score, paddleLYPos, ballXPos, ballYPos, ballXDirection, ballYDirection, BALL_X_SPEED, BALL_Y_SPEED]
+        if (ballYPos < paddleLYPos):
+            distancia = paddleLYPos - ballYPos - BALL_HEIGHT
+        else:
+            distancia = ballYPos - paddleLYPos - PADDLE_HEIGHT
+        return [score, paddleLYPos, ballXPos, ballYPos, ballXDirection, speed, angle, Ball_X_Speed, Ball_Y_Speed, distancia]
 
     # Comproba les colisions de la IA
-    if (ballXPos >= WINDOW_WIDTH - PADDLE_WIDTH - PADDLE_BUFFER):
+    if (ballXPos >= WINDOW_WIDTH - PADDLE_WIDTH - PADDLE_BUFFER - BALL_WIDTH):
         # Cambia de direccio
-        BALL_X_SPEED = random.randint(0, 9)
-        BALL_Y_SPEED = random.randint(0, PADDLE_SPEED)
-        num = random.randint(-1, 1)
-        if(num != 0):
-            ballYDirection = num
+        if(mangle):
+            angle = 2.9 * random.random() + 0.1
+        if(mangle_2):
+            angle = angle + (random.random() - 0.5) * math.pi * 0.1
+            if(angle > math.pi - 0.1):
+                angle = math.pi
+            elif(angle < 0.1):
+                angle = 0.1
+        if(mspeed):
+            speed =  2 * random.random() + 3
+        Ball_X_Speed = speed * math.sin(angle)
+        Ball_Y_Speed = speed * math.cos(angle)
         ballXDirection = -1
     # No Colisiona
     elif (ballXPos >= WINDOW_WIDTH - BALL_WIDTH):
@@ -140,22 +157,27 @@ def updateBall_Wall(paddleLYPos, ballXPos, ballYPos, ballXDirection, ballYDirect
         if(ballXDirection != -1):
             ballXDirection = -1
             score = 1
-        return [score, paddleLYPos, ballXPos, ballYPos, ballXDirection, ballYDirection, BALL_X_SPEED, BALL_Y_SPEED]
+        return [score, paddleLYPos, ballXPos, ballYPos, ballXDirection, speed, angle, Ball_X_Speed, Ball_Y_Speed, distancia]
 
 
     # Colisiona amb la part superior
     # Mou abaix
     if (ballYPos <= 0):
         ballYPos = 0;
-        ballYDirection = 1;
+        #angle = math.pi - angle
+        Ball_Y_Speed = -1 * Ball_Y_Speed
+        angle = math.pi - angle
     # Si colisiona amb la part d'abaix, rebota
     elif (ballYPos >= WINDOW_HEIGHT - BALL_HEIGHT):
         ballYPos = WINDOW_HEIGHT - BALL_HEIGHT
-        ballYDirection = -1
-    return [score, paddleLYPos, ballXPos, ballYPos, ballXDirection, ballYDirection, BALL_X_SPEED, BALL_Y_SPEED]
+        #angle = math.pi - angle
+        angle = math.pi - angle
+        Ball_Y_Speed = -1 * Ball_Y_Speed
+    return [score, paddleLYPos, ballXPos, ballYPos, ballXDirection, speed, angle, Ball_X_Speed, Ball_Y_Speed, distancia]
 
 def updatePaddle_left(action, paddleLYPos):
     #Paralelitzar
+    Top = False
     # Adalt
     if (action == 1):
         paddleLYPos = paddleLYPos - PADDLE_SPEED
@@ -165,9 +187,11 @@ def updatePaddle_left(action, paddleLYPos):
 
     if (paddleLYPos < 0):
         paddleLYPos = 0
+        Top = True
     if (paddleLYPos > WINDOW_HEIGHT - PADDLE_HEIGHT):
         paddleLYPos = WINDOW_HEIGHT - PADDLE_HEIGHT
-    return paddleLYPos
+        Top = True
+    return [paddleLYPos, Top]
 
 
 def updatePaddle_right(paddleRYPos, ballYPos):
@@ -192,7 +216,17 @@ class PongGame:
         # Mantener el score
         self.tally = 0
         self.hit = False
+        self.distance = 0
+        self.Top = False
         self.wall = False
+        self.mangle = False
+        self.mangle_2 = False
+        self.mspeed = False
+        self.test = False
+        self.speed = math.sqrt(math.pow(BALL_X_SPEED,2) + math.pow(BALL_Y_SPEED,2))
+        self.angle = math.acos(BALL_Y_SPEED / self.speed)
+        self.Ball_X_Speed = BALL_X_SPEED
+        self.Ball_Y_Speed = BALL_Y_SPEED
         # iniciam la pala
         # Si tenim mes de una paleta(es pasara a l'init)
         # self.number_paddle = np
@@ -232,29 +266,34 @@ class PongGame:
         screen.fill(BLACK)
         self.hit = False
         # Actualitzam la nostra pala
-        self.paddleLYPos = updatePaddle_left(action, self.paddleLYPos)
-        drawPaddle_left(self.paddleLYPos)
+        [self.paddleLYPos, self.Top] = updatePaddle_left(action, self.paddleLYPos)
+        if(not self.test):
+            drawPaddle_left(self.paddleLYPos)
         # Actualitzam la IA
         if(self.wall):
-            draw_Wall()
-            [score, self.paddleLYPos, self.ballXPos, self.ballYPos, self.ballXDirection,self.ballYDirection,
-             self.BALL_X_SPEED, self.BALL_Y_SPEED] = updateBall_Wall(self.paddleLYPos, self.ballXPos, self.ballYPos,
-                                                                     self.ballXDirection,self.ballYDirection,
-                                                                     self.BALL_X_SPEED, self.BALL_Y_SPEED)
+            if (not self.test):
+                draw_Wall()
+            [score, self.paddleLYPos, self.ballXPos, self.ballYPos, self.ballXDirection,
+             self.speed, self.angle,self.Ball_X_Speed, self.Ball_Y_Speed, self.distance] = \
+                updateBall_Wall(self.paddleLYPos, self.ballXPos, self.ballYPos,self.ballXDirection, self.speed,
+                                self.angle, self.mspeed, self.mangle, self.mangle_2, self.Ball_X_Speed, self.Ball_Y_Speed)
         else:
             # Actualitzam la pilota
             self.paddleRYPos = updatePaddle_right(self.paddleRYPos, self.ballYPos)
-            drawPaddle_right(self.paddleRYPos)
+            if (not self.test):
+                drawPaddle_right(self.paddleRYPos)
             [score, self.paddleLYPos, self.paddleRYPos, self.ballXPos, self.ballYPos, self.ballXDirection,
-             self.ballYDirection] = updateBall(self.paddleLYPos, self.paddleRYPos, self.ballXPos, self.ballYPos,
-                                               self.ballXDirection, self.ballYDirection)
+             self.ballYDirection, self.distance] = updateBall(self.paddleLYPos, self.paddleRYPos, self.ballXPos,
+                                                              self.ballYPos,self.ballXDirection, self.ballYDirection)
 
         # Pintam la pilota
-        drawBall(self.ballXPos, self.ballYPos)
+        if (not self.test):
+            drawBall(self.ballXPos, self.ballYPos)
         # Copiam la data de imatge
         # image_data = pygame.surfarray.array3d(pygame.display.get_surface())
         # Actualitzam la finestra
-        pygame.display.flip()
+        if (not self.test):
+            pygame.display.flip()
         # Actualitzam la puntuacio total
         if(score == 2):
             score = 0
@@ -281,10 +320,50 @@ class PongGame:
     def getFPS(self):
         return FPS
 
+    def getDistancia(self):
+        return self.distance
+
+    def getTop(self):
+        return self.Top
+
     def setWall(self):
         self.wall = True
-        self.BALL_X_SPEED = BALL_X_SPEED
-        self.BALL_Y_SPEED = BALL_Y_SPEED
+        self.mangle = True
+        self.mangle_2 = False
+        self.mspeed = True
 
+    def setWall_2(self):
+        self.wall = True
+        self.mangle = False
+        self.mangle_2 = True
+        self.mspeed = True
+
+    def setWall_angle(self):
+        self.wall = True
+        self.mangle = True
+        self.mangle_2 = False
+        self.mspeed = False
+        self.speed = math.sqrt(math.pow(BALL_X_SPEED, 2) + math.pow(BALL_Y_SPEED, 2))
+
+    def setWall_angle_2(self):
+        self.wall = True
+        self.mangle = False
+        self.mangle_2 = True
+        self.mspeed = False
+        self.speed = math.sqrt(math.pow(BALL_X_SPEED, 2) + math.pow(BALL_Y_SPEED, 2))
+        self.angle = math.acos(BALL_Y_SPEED / math.sqrt(math.pow(BALL_X_SPEED, 2) + math.pow(BALL_Y_SPEED, 2)))
+
+    def setWall_Speed(self):
+        self.wall = True
+        self.mangle = False
+        self.mangle_2 = False
+        self.mspeed = True
+        self.angle = math.acos(BALL_Y_SPEED / math.sqrt(math.pow(BALL_X_SPEED, 2) + math.pow(BALL_Y_SPEED, 2)))
+
+    def TestMode(self):
+        self.test = True
+
+    def NotTest(self):
+        self.test = False
 
 

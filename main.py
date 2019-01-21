@@ -3,7 +3,7 @@ import numpy as np  # math
 import Neural
 import random
 import time
-
+import pickle
 # hyper params
 ACTIONS = 3  # up,down, stay
 IMPUTS = 4 # Posicio de la pilota a les ultimes posicio actual de la paelata i la pilota
@@ -12,12 +12,23 @@ HITS_GOAL = 20 #Nombre de cops objectiu
 
 
 #Actualitza els imputs de les pilotes, copiant les anteriors posicions de les pilotes i actualitzant l'actual.
-def UpdateImputs( Px, Py):
+def UpdateImputs(x, y, x1, y1, x2, y2, x3, y3, Px, Py):
+    x4 = x3
+    y4 = y3
+
+    x3 = x2
+    y3 = y2
+
+    x2 = x1
+    y2 = y1
+
+    x1 = x
+    y1 = y
 
     x = Px
     y = Py
 
-    return [x, y]
+    return [x, y, x1, y1, x2, y2, x3, y3, x4, y4]
 
 # Transforma la matriu resultant de la xarxa en un array i retorna l'index del mayor component(accio mes probable)
 def getaction(a):
@@ -26,127 +37,57 @@ def getaction(a):
         
 
 def main():
-    #Inicialitzam la xarxa
-    sizes = [IMPUTS, 8 ,ACTIONS]
 
     #Inicialitzam el Joc
     game = Pong.PongGame()
 
-    #Copiam la posicio inicial de e la pilota a les nostres variables de imput
+    # Copiam la posicio inicial de e la pilota a les nostres variables de imput
     bx = game.getballXposition()
     by = game.getballYposition()
+    bx1 = bx
+    by1 = by
+    bx2 = bx
+    by2 = by
+    bx3 = bx
+    by3 = by
+    bx4 = bx
+    by4 = by
 
-    #Guarda el nombre maxim de cops de la ultima generacio.
-    max_hit = 0
+    Net = pickle.load(open("../../Xarxes/xarxaAN_2.nn", "rb"))
+    print(Net.sizes)
 
-    #Cream les llistes on enmagatzamarem les millors xarxes amb el nombre de cops que han assolit
-    best_nets = []
-    best_hits = []
-
-    #Cream els 2 arrays que emprarem per a les generacions
-    nets = []
-    n = 0
-
-    while(n < NUM_XARXES):
-        nets.append(Neural.Network(sizes))
-        n = n+1
-
-    hits = np.zeros(NUM_XARXES, dtype=np.int16)
-    while(max_hit < HITS_GOAL):
-        x = 0
-        start = time.time()
-        while(x < NUM_XARXES):
-            if (x != 0):
-                start = time.time()
-            hits[x] = 0
-            score = -2
-            while(score != -1 and hits[x] < HITS_GOAL):
-                if ((score != -2 and x != 0) or score != -2):
-                    start = time.time()
-                # Copiam la posicio actual de la paleta de la qual decidim l'accio
-                px, py = game.getPaddlePos()
-                #Cream l'array(matriu (n,1)) de imputs de la xarxa
-                a = np.asarray([[bx], [by], [px],[py]])
-                # Decidim l'accio cridant a la Xarxa
-                Pa = nets[x].feedforward(a)
-                action = getaction(Pa)
-                # Actualitzam el Frame amb la nova accio
-                score, Posx, Posy = game.getNextFrame(action)
-                bx, by = UpdateImputs(Posx, Posy)
-                #Si la pala ha pegat a la pilota, aumentam els hits de la xarxa
-                if(game.gethit()):
-                    hits[x] = hits[x] + 1
-                #time.sleep(max(1. / game.getFPS() - (time.time() - start), 0))
-
-            x = x + 1
-        #Sort
-        i = 0
-        while(i < hits.__len__()):
-            j = i
-            while(j < hits.__len__()):
-                if(hits[i] < hits[j]):
-                    auxc = hits[i]
-                    hits[i] = hits[j]
-                    hits[j] = auxc
-                    auxn = nets[i]
-                    nets[i] = nets[j]
-                    nets[j] = auxn
-                j = j + 1
-            i = i + 1
-        #Emmagatzemam la xarxa i el nombre de cops
-        best_hits.append(hits[0])
-        best_nets.append(nets[0])
-        print("/Length",best_hits.__len__(),"/ Hits cumu", best_hits)
-        max_hit = hits[0]
-        #Si cap xarxa a copetjat, generam noves aleatoriament
-        if(hits[0] == 0):
-            n = 0
-            while (n < NUM_XARXES):
-                nets[n] = Neural.Network(sizes)
-                n = n + 1
-        elif(max_hit < HITS_GOAL):
-            #Copiam les xarxes
-            copy_nets = nets
-            #Recorreguem les xarxes
-            for i, n in enumerate(nets):
-                if (i < nets.__len__() * 0.8):
-                    # Numero aleatori de 0 a la suma de tots el hits
-                    num = random.randint(0, hits.sum())
-                    aux = 0
-                    # Seleccionam l'index de la xarxa corresponent
-                    while (num > hits[aux]):
-                        num = num - hits[aux]
-                        aux = aux + 1
-                    # Generam la nova xarxa filla de la xarxa de l'index
-                    nets[i] = copy_nets[aux].generate_child()
-                else:
-                    # Numero aleatori de 0 a la suma de tots el hits
-                    num = random.randint(0, nets.__len__())
-                    aux = 1
-                    # Seleccionam l'index de la xarxa corresponent
-                    while (num > aux):
-                        aux = aux + 1
-                    # Generam la nova xarxa filla de la xarxa de l'index
-                    nets[i] = copy_nets[aux - 1].generate_child()
-
-        print("/ Hits", best_hits[-1])
-    game.setWall()
-    while(1):
+    game.setWall_angle_2()
+    game.TestMode()
+    x = 0
+    h = 0
+    while(x < 1000):
         start = time.time()
         # Copiam la posicio actual de la paleta de la qual decidim l'accio
         px, py = game.getPaddlePos()
         # Cream l'array(matriu (n,1)) de imputs de la xarxa
-        a = np.asarray([[bx], [by], [px], [py]])
+        if(Net.sizes[0] == 12):
+            a = np.asarray([[bx], [by], [bx1], [by1], [bx2], [by2], [bx3], [by3], [bx4], [by4], [px], [py]])
+        elif(Net.sizes[0] == 8):
+            a = np.asarray([[bx], [by], [bx1], [by1], [bx2], [by2], [px], [py]])
+        elif(Net.sizes[0] == 4):
+            a = np.asarray([[bx], [by], [px], [py]])
         # Decidim l'accio cridant a la Xarxa
-        Pa = best_nets[-1].feedforward(a)
+        Pa = Net.feedforward(a)
         action = getaction(Pa)
         # Actualitzam el Frame amb la nova accio
         score, Posx, Posy = game.getNextFrame(action)
-        bx, by = UpdateImputs(Posx, Posy)
+        bx, by, bx1, by1, bx2, by2, bx3, by3, bx4, by4 = UpdateImputs(bx, by, bx1, by1, bx2, by2, bx3, by3, Posx, Posy)
         # Si la pala ha pegat a la pilota, aumentam els hits de la xarxa
-        time.sleep(max(1. / game.getFPS() - (time.time() - start), 0))
+        #time.sleep(max(1. / game.getFPS() - (time.time() - start), 0))
+        if(game.gethit()):
+            x = x + 1
+            h = h + 1
         if(score == -1):
-            print ("HIT!!!")
+            x = x + 1
+
+    print(h/x * 100)
+
+
 
 
 

@@ -42,4 +42,7 @@ A mes, se ha inclos la proposta de generar un 20% de la nova generacio com a fil
 
 # Versio alternativa de la Segona versio(Pong Wall)
 Modificacio de la segona versio que, en acabar el proces de creaccio de la xarxa, enfronta la xarxa resultant a una pared que retorna aleatoriament la pilota.
-La aleatorietat ve donada per 3 parametres: la velocitat Y de la pilota, que pot tenir de valors enters de 0 a la velocitat de la paleta, la velocitat X de la pilota, de valors entre 1 y 9(seguent la velocitat X inicial 3) i la direccio X de la pilota, de valors 0(es conserva la direccio), 1( la direccio pasa a ser cap a dalt) o -1( la direccio de la pilota pasa a ser cap abaix).
+Aquesta versio enfronta a l'agent amb un mur que retorna la pilota amb un angle aleatori(ente 0.1 i 3 radians) i una velocitat aleatoria( entre 3 i 5). A mes, evalua el seu rendiment.
+
+# Versio alternativa de Pong_Wall(Pong_Wall_angle i Pong_Wall_Velocitat)
+Aquestes dues versions son modificacions de la versio Pong Wall, pero nomes modificant l'angle o velocitat. A mes, a diferencia de la versio Pong Wall, aquestes versions entrenen una xarxa, que sera posteriorment evaluada amb totes les versions(Pong Classic, Pong Wall, Pong Wall Angle i Pong Wall Velocitat).
